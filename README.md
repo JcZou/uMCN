@@ -1,5 +1,5 @@
 ## uMCN消息订阅/发布模块
-uMCN (Micro Multi-Communication Node) 提供基于订阅/发布模式的安全跨进程通信方式，为各个线程，模块之间进行信息交换。
+uMCN (Micro Multi-Communication Node) 提供基于订阅/发布模式的安全跨进程通信方式，为各个线程，模块之间进行信息交换。 uMCN为[Firmament Autopilot](https://github.com/FirmamentPilot/FMT_Firmware)项目的一个组件，更详细的文档内容，请查看[项目文档](https://firmamentpilot.github.io/docs/module/)
 
 ### 定义消息
 定义一条新的uMCN只需简单几步。这里举例说明定义一条新的消息，消息名称为`my_mcn_topic`，消息内容(topic)为：
