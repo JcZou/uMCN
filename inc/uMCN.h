@@ -25,8 +25,8 @@ extern "C" {
 
 #define MCN_MALLOC(size)            rt_malloc(size)
 #define MCN_FREE(ptr)               rt_free(ptr)
-#define MCN_ENTER_CRITICAL          OS_ENTER_CRITICAL
-#define MCN_EXIT_CRITICAL           OS_EXIT_CRITICAL
+#define MCN_ENTER_CRITICAL          rt_enter_critical()
+#define MCN_EXIT_CRITICAL           rt_exit_critical()
 #define MCN_EVENT_HANDLE            rt_sem_t
 #define MCN_SEND_EVENT(event)       rt_sem_release(event)
 #define MCN_WAIT_EVENT(event, time) rt_sem_take(event, time)
@@ -84,14 +84,14 @@ struct mcn_list {
     }
 
 /******************* API *******************/
-fmt_err mcn_advertise(McnHub* hub, int (*echo)(void* parameter));
+rt_err_t mcn_advertise(McnHub* hub, int (*echo)(void* parameter));
 McnNode_t mcn_subscribe(McnHub* hub, MCN_EVENT_HANDLE event_t, void (*cb)(void* parameter));
-fmt_err mcn_unsubscribe(McnHub* hub, McnNode_t node);
-fmt_err mcn_publish(McnHub* hub, const void* data);
+rt_err_t mcn_unsubscribe(McnHub* hub, McnNode_t node);
+rt_err_t mcn_publish(McnHub* hub, const void* data);
 bool mcn_poll(McnNode_t node_t);
 bool mcn_poll_sync(McnNode_t node_t, int32_t timeout);
-fmt_err mcn_copy(McnHub* hub, McnNode_t node_t, void* buffer);
-fmt_err mcn_copy_from_hub(McnHub* hub, void* buffer);
+rt_err_t mcn_copy(McnHub* hub, McnNode_t node_t, void* buffer);
+rt_err_t mcn_copy_from_hub(McnHub* hub, void* buffer);
 void mcn_node_clear(McnNode_t node_t);
 
 McnList mcn_get_list(void);

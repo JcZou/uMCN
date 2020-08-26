@@ -26,13 +26,13 @@ McnList mcn_get_list(void)
     return _Mcn_list;
 }
 
-fmt_err mcn_advertise(McnHub* hub, int (*echo)(void* parameter))
+rt_err_t mcn_advertise(McnHub* hub, int (*echo)(void* parameter))
 {
     MCN_ASSERT(hub != NULL);
 
     if (hub->pdata != NULL) {
         /* already advertised */
-        return FMT_ENOTHANDLE;
+        return RT_ERROR;
     }
 
     MCN_ENTER_CRITICAL;
@@ -40,7 +40,7 @@ fmt_err mcn_advertise(McnHub* hub, int (*echo)(void* parameter))
     hub->echo = echo;
 
     if (hub->pdata == NULL) {
-        return FMT_ENOMEM;
+        return RT_ERROR;
     }
 
     memset(hub->pdata, 0, hub->obj_size);
@@ -57,7 +57,7 @@ fmt_err mcn_advertise(McnHub* hub, int (*echo)(void* parameter))
         cp->next = (McnList_t)MCN_MALLOC(sizeof(McnList));
 
         if (cp->next == NULL)
-            return FMT_ENOMEM;
+            return RT_ERROR;
 
         cp = cp->next;
     }
@@ -67,7 +67,7 @@ fmt_err mcn_advertise(McnHub* hub, int (*echo)(void* parameter))
 
     MCN_EXIT_CRITICAL;
 
-    return FMT_EOK;
+    return RT_EOK;
 }
 
 McnNode_t mcn_subscribe(McnHub* hub, MCN_EVENT_HANDLE event_t, void (*cb)(void* parameter))
@@ -112,7 +112,7 @@ McnNode_t mcn_subscribe(McnHub* hub, MCN_EVENT_HANDLE event_t, void (*cb)(void* 
     return node;
 }
 
-fmt_err mcn_unsubscribe(McnHub* hub, McnNode_t node)
+rt_err_t mcn_unsubscribe(McnHub* hub, McnNode_t node)
 {
     MCN_ASSERT(hub != NULL);
     MCN_ASSERT(node != NULL);
@@ -133,7 +133,7 @@ fmt_err mcn_unsubscribe(McnHub* hub, McnNode_t node)
 
     if (cur_node == NULL) {
         /* can not find */
-        return FMT_EEMPTY;
+        return RT_ERROR;
     }
 
     /* update list */
@@ -157,17 +157,17 @@ fmt_err mcn_unsubscribe(McnHub* hub, McnNode_t node)
     hub->link_num--;
     MCN_EXIT_CRITICAL;
 
-    return FMT_EOK;
+    return RT_EOK;
 }
 
-fmt_err mcn_publish(McnHub* hub, const void* data)
+rt_err_t mcn_publish(McnHub* hub, const void* data)
 {
     MCN_ASSERT(hub != NULL);
     MCN_ASSERT(data != NULL);
 
     if (hub->pdata == NULL) {
         // hub is not advertised yet
-        return FMT_ERROR;
+        return RT_ERROR;
     }
 
     // calculate publish frequency
@@ -209,7 +209,7 @@ fmt_err mcn_publish(McnHub* hub, const void* data)
         node = node->next;
     }
 
-    return FMT_EOK;
+    return RT_EOK;
 }
 
 bool mcn_poll(McnNode_t node_t)
@@ -233,7 +233,7 @@ bool mcn_poll_sync(McnNode_t node_t, int32_t timeout)
     return MCN_WAIT_EVENT(node_t->event_t, timeout) == 0 ? 1 : 0;
 }
 
-fmt_err mcn_copy(McnHub* hub, McnNode_t node_t, void* buffer)
+rt_err_t mcn_copy(McnHub* hub, McnNode_t node_t, void* buffer)
 {
     MCN_ASSERT(hub != NULL);
     MCN_ASSERT(node_t != NULL);
@@ -241,12 +241,12 @@ fmt_err mcn_copy(McnHub* hub, McnNode_t node_t, void* buffer)
 
     if (hub->pdata == NULL) {
         /* copy from non-advertised hub */
-        return FMT_ERROR;
+        return RT_ERROR;
     }
 
     if (!hub->published) {
         /* copy before published */
-        return FMT_ENOTHANDLE;
+        return RT_ERROR;
     }
 
     MCN_ENTER_CRITICAL;
@@ -254,29 +254,29 @@ fmt_err mcn_copy(McnHub* hub, McnNode_t node_t, void* buffer)
     node_t->renewal = 0;
     MCN_EXIT_CRITICAL;
 
-    return FMT_EOK;
+    return RT_EOK;
 }
 
-fmt_err mcn_copy_from_hub(McnHub* hub, void* buffer)
+rt_err_t mcn_copy_from_hub(McnHub* hub, void* buffer)
 {
     MCN_ASSERT(hub != NULL);
     MCN_ASSERT(buffer != NULL);
 
     if (hub->pdata == NULL) {
         /* copy from non-advertised hub */
-        return FMT_ERROR;
+        return RT_ERROR;
     }
 
     if (!hub->published) {
         /* copy before published */
-        return FMT_ENOTHANDLE;
+        return RT_ERROR;
     }
 
     MCN_ENTER_CRITICAL;
     memcpy(buffer, hub->pdata, hub->obj_size);
     MCN_EXIT_CRITICAL;
 
-    return FMT_EOK;
+    return RT_EOK;
 }
 
 void mcn_node_clear(McnNode_t node_t)
