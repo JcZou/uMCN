@@ -34,6 +34,18 @@ extern "C" {
 
 #define MCN_MAX_LINK_NUM 30
 
+#ifndef bool
+typedef int bool;
+#endif
+
+#ifndef true
+#define true (1U)
+#endif
+
+#ifndef false
+#define false (0U)
+#endif
+
 typedef struct mcn_node McnNode;
 typedef struct mcn_node* McnNode_t;
 struct mcn_node {
