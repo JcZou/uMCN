@@ -170,10 +170,10 @@ rt_err_t mcn_publish(McnHub* hub, const void* data)
         return RT_ERROR;
     }
 
-    // calculate publish frequency
-    uint32_t time_now = systime_now_ms();
+    // provide systime_now_ms() here to calculate publish frequency
+    /* uint32_t time_now = systime_now_ms();
     hub->freq = 1000.0f / (float)(time_now - hub->last_pub_time);
-    hub->last_pub_time = time_now;
+    hub->last_pub_time = time_now; */
 
     MCN_ENTER_CRITICAL;
     /* copy data to hub */
