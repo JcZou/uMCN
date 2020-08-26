@@ -21,7 +21,7 @@ static int _my_mcn_topic_echo(void* param)
 
 static void publisher(void)
 {
-	test_data my_data = {2, -1};
+	test_data my_data = {.a=2, .b=-1};
 	
 	mcn_advertise(MCN_ID(my_mcn_topic), _my_mcn_topic_echo);
 	
@@ -32,7 +32,7 @@ static void subscriber(void)
 {
 	test_data read_data;
 	
-	McnNode_t my_nod = mcn_subscribe(MCN_ID(my_mcn_topic), NULL, NULL);
+	McnNode_t my_nod = mcn_subscribe(MCN_ID(my_mcn_topic), RT_NULL, RT_NULL);
 	
 	if(mcn_poll(my_nod){
 		mcn_copy(MCN_ID(my_mcn_topic), my_nod, &read_data);
