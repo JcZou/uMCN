@@ -75,14 +75,14 @@ McnNode_t mcn_subscribe(McnHub* hub, MCN_EVENT_HANDLE event_t, void (*cb)(void* 
     MCN_ASSERT(hub != NULL);
 
     if (hub->link_num >= MCN_MAX_LINK_NUM) {
-        console_printf("mcn link num is already full!\n");
+        rt_kprintf("mcn link num is already full!\n");
         return NULL;
     }
 
     McnNode_t node = (McnNode_t)MCN_MALLOC(sizeof(McnNode));
 
     if (node == NULL) {
-        console_printf("mcn create node fail!\n");
+        rt_kprintf("mcn create node fail!\n");
         return NULL;
     }
 
