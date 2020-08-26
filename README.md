@@ -1,5 +1,5 @@
 ## uMCN消息订阅/发布模块
-uMCN (Micro Multi-Communication Node) 提供基于订阅/发布模式的安全跨进程通信方式，为FMT各个任务，模块之间进行信息交换的主要方式。
+uMCN (Micro Multi-Communication Node) 提供基于订阅/发布模式的安全跨进程通信方式，为各个线程，模块之间进行信息交换。
 
 ### 定义消息
 定义一条新的uMCN只需简单几步。这里举例说明定义一条新的消息，消息名称为`my_mcn_topic`，消息内容(topic)为：
@@ -26,7 +26,7 @@ mcn_advertise(MCN_ID(my_mcn_topic), _my_mcn_topic_echo);
 static int _my_mcn_topic_echo(void* param)
 {
 	test_data data;
-	if(mcn_copy_from_hub((McnHub*)param, &data) == FMT_EOK){
+	if(mcn_copy_from_hub((McnHub*)param, &data) == RT_EOK){
 		console_printf("a:%d b:%f c:%c %c %c %c\n", data.a, data.b,
 						data.c[0], data.c[1], data.c[2], data.c[3]);
 	}
