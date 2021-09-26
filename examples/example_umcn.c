@@ -23,7 +23,7 @@ static void test_entry(void* parameter)
 
     while (1) {
         if (mcn_poll(my_nod)) {
-            mcn_copy(MCN_ID(my_mcn_topic), my_nod, &read_data);
+            mcn_copy(MCN_HUB(my_mcn_topic), my_nod, &read_data);
             rt_kprintf("get topic, a=%d str=%s\n", read_data.a, read_data.str);
             break;
         }
@@ -33,21 +33,21 @@ static void test_entry(void* parameter)
     memset(&read_data, 0, sizeof(read_data));
 
     if (mcn_poll_sync(my_nod_sync, RT_WAITING_FOREVER)) {
-        mcn_copy(MCN_ID(my_mcn_topic), my_nod_sync, &read_data);
+        mcn_copy(MCN_HUB(my_mcn_topic), my_nod_sync, &read_data);
         rt_kprintf("get sync topic, a=%d str=%s\n", read_data.a, read_data.str);
     }
 }
 
-int uMCN_test(int argc, char** argv)
+int mcn_test(int argc, char** argv)
 {
-    test_data my_data = { .a = 777, .str = "Hello uMCN" };
+    test_data my_data = { .a = 123, .str = "Hello RT-Thread" };
 
-    mcn_advertise(MCN_ID(my_mcn_topic), RT_NULL);
+    mcn_advertise(MCN_HUB(my_mcn_topic), RT_NULL);
 
-    my_nod = mcn_subscribe(MCN_ID(my_mcn_topic), RT_NULL, RT_NULL);
+    my_nod = mcn_subscribe(MCN_HUB(my_mcn_topic), RT_NULL, RT_NULL);
 
     event = rt_sem_create("my_event", 0, RT_IPC_FLAG_FIFO);
-    my_nod_sync = mcn_subscribe(MCN_ID(my_mcn_topic), event, RT_NULL);
+    my_nod_sync = mcn_subscribe(MCN_HUB(my_mcn_topic), event, RT_NULL);
 
     tid0 = rt_thread_create("mcn_test",
         test_entry, RT_NULL,
@@ -56,9 +56,9 @@ int uMCN_test(int argc, char** argv)
         rt_thread_startup(tid0);
 
     // publish uMCN topic
-    mcn_publish(MCN_ID(my_mcn_topic), &my_data);
+    mcn_publish(MCN_HUB(my_mcn_topic), &my_data);
     rt_kprintf("publish [my_mcn_topic] topic: a=%d str=%s\n", my_data.a, my_data.str);
 
     return 0;
 }
-MSH_CMD_EXPORT(uMCN_test, uMCN API test);
+MSH_CMD_EXPORT(mcn_test, uMCN API test);

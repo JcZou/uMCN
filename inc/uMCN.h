@@ -14,8 +14,8 @@
  * limitations under the License.
  *****************************************************************************/
 
-#ifndef __UMCN_H__
-#define __UMCN_H__
+#ifndef UMCN_H__
+#define UMCN_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,7 +32,8 @@ extern "C" {
 #define MCN_WAIT_EVENT(event, time) rt_sem_take(event, time)
 #define MCN_ASSERT(EX)              RT_ASSERT(EX)
 
-#define MCN_MAX_LINK_NUM 30
+#define MCN_MAX_LINK_NUM        30
+#define MCN_FREQ_EST_WINDOW_LEN 5
 
 #ifndef bool
 typedef int bool;
@@ -50,12 +51,13 @@ typedef struct mcn_node McnNode;
 typedef struct mcn_node* McnNode_t;
 struct mcn_node {
     volatile uint8_t renewal;
-    MCN_EVENT_HANDLE event_t;
-    void (*cb)(void* parameter);
+    MCN_EVENT_HANDLE event;
+    void (*pub_cb)(void* parameter);
     McnNode_t next;
 };
 
 typedef struct mcn_hub McnHub;
+typedef struct mcn_hub* McnHub_t;
 struct mcn_hub {
     const char* obj_name;
     const uint32_t obj_size;
@@ -63,25 +65,27 @@ struct mcn_hub {
     McnNode_t link_head;
     McnNode_t link_tail;
     uint32_t link_num;
-    uint8_t published; // publish flag
+    uint8_t published;
+    uint8_t suspend;
     int (*echo)(void* parameter);
-    // frequency estimate
-    uint32_t last_pub_time;
+    /* publish freq estimate */
     float freq;
+    uint16_t freq_est_window[MCN_FREQ_EST_WINDOW_LEN];
+    uint16_t window_index;
 };
 
 typedef struct mcn_list McnList;
 typedef struct mcn_list* McnList_t;
 struct mcn_list {
-    McnHub* hub_t;
+    McnHub_t hub;
     McnList_t next;
 };
 
-/******************* Helper Macro *******************/
-#define MCN_ID(_name) (&__mcn_##_name)
-
+/* Obtain uMCN hub according to name */
+#define MCN_HUB(_name) (&__mcn_##_name)
+/* Declare a uMCN topic. Declare the topic at places where you need use it */
 #define MCN_DECLARE(_name) extern McnHub __mcn_##_name
-
+/* Define a uMCN topic. A topic should only be defined once */
 #define MCN_DEFINE(_name, _size) \
     McnHub __mcn_##_name = {     \
         .obj_name = #_name,      \
@@ -91,22 +95,24 @@ struct mcn_list {
         .link_tail = NULL,       \
         .link_num = 0,           \
         .published = 0,          \
-        .last_pub_time = 0,      \
+        .suspend = 0,            \
         .freq = 0.0f             \
     }
 
-/******************* API *******************/
-rt_err_t mcn_advertise(McnHub* hub, int (*echo)(void* parameter));
-McnNode_t mcn_subscribe(McnHub* hub, MCN_EVENT_HANDLE event_t, void (*cb)(void* parameter));
-rt_err_t mcn_unsubscribe(McnHub* hub, McnNode_t node);
-rt_err_t mcn_publish(McnHub* hub, const void* data);
+rt_err_t mcn_init(void);
+rt_err_t mcn_advertise(McnHub_t hub, int (*echo)(void* parameter));
+McnNode_t mcn_subscribe(McnHub_t hub, MCN_EVENT_HANDLE event, void (*pub_cb)(void* parameter));
+rt_err_t mcn_unsubscribe(McnHub_t hub, McnNode_t node);
+rt_err_t mcn_publish(McnHub_t hub, const void* data);
 bool mcn_poll(McnNode_t node_t);
 bool mcn_poll_sync(McnNode_t node_t, int32_t timeout);
-rt_err_t mcn_copy(McnHub* hub, McnNode_t node_t, void* buffer);
-rt_err_t mcn_copy_from_hub(McnHub* hub, void* buffer);
+rt_err_t mcn_copy(McnHub_t hub, McnNode_t node_t, void* buffer);
+rt_err_t mcn_copy_from_hub(McnHub_t hub, void* buffer);
+void mcn_suspend(McnHub_t hub);
+void mcn_resume(McnHub_t hub);
+McnList_t mcn_get_list(void);
+McnHub_t mcn_iterate(McnList_t* ite);
 void mcn_node_clear(McnNode_t node_t);
-
-McnList mcn_get_list(void);
 
 #ifdef __cplusplus
 }
