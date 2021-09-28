@@ -23,7 +23,7 @@ static struct rt_timer timer_mcn_freq_est;
 
 /**
  * @brief Topic publish frequency estimator entry
- * 
+ *
  * @param parameter Unused
  */
 static void mcn_freq_est_entry(void* parameter)
@@ -47,7 +47,7 @@ static void mcn_freq_est_entry(void* parameter)
 
 /**
  * @brief Clear uMCN node renewal flag
- * 
+ *
  * @param node_t uMCN node
  */
 void mcn_node_clear(McnNode_t node_t)
@@ -65,7 +65,7 @@ void mcn_node_clear(McnNode_t node_t)
 
 /**
  * @brief Suspend a uMCN topic
- * 
+ *
  * @param hub uMCN hub
  */
 void mcn_suspend(McnHub_t hub)
@@ -75,7 +75,7 @@ void mcn_suspend(McnHub_t hub)
 
 /**
  * @brief Resume a uMCN topic
- * 
+ *
  * @param hub uMCN hub
  */
 void mcn_resume(McnHub_t hub)
@@ -85,7 +85,7 @@ void mcn_resume(McnHub_t hub)
 
 /**
  * @brief Get uMCN list
- * 
+ *
  * @return McnList_t uMCN list pointer
  */
 McnList_t mcn_get_list(void)
@@ -95,7 +95,7 @@ McnList_t mcn_get_list(void)
 
 /**
  * @brief Iterate all uMCN hubs in list
- * 
+ *
  * @param ite uMCN list pointer
  * @return McnHub_t uMCN hub
  */
@@ -116,7 +116,7 @@ McnHub_t mcn_iterate(McnList_t* ite)
 /**
  * @brief Poll for topic status
  * @note This function would return immediately
- * 
+ *
  * @param node_t uMCN node
  * @return true Topic updated
  * @return false Topic not updated
@@ -137,7 +137,7 @@ bool mcn_poll(McnNode_t node_t)
 /**
  * @brief Synchronize poll for topic status
  * @note event must has been provided when subscribe the topic
- * 
+ *
  * @param node_t uMCN node
  * @param timeout Wait timeout
  * @return true true Topic updated
@@ -154,7 +154,7 @@ bool mcn_poll_sync(McnNode_t node_t, int32_t timeout)
 /**
  * @brief Copy uMCN topic data from hub
  * @note This function will clear the renewal flag
- * 
+ *
  * @param hub uMCN hub
  * @param node_t uMCN node
  * @param buffer buffer to received the data
@@ -186,12 +186,12 @@ rt_err_t mcn_copy(McnHub_t hub, McnNode_t node_t, void* buffer)
 
 /**
  * @brief Copy uMCN topic data from hub
- * @note This function will directly copy topic data from hub no matter it has been 
+ * @note This function will directly copy topic data from hub no matter it has been
  * updated or not and won't clear the renewal flag
- * 
- * @param hub 
- * @param buffer 
- * @return rt_err_t 
+ *
+ * @param hub
+ * @param buffer
+ * @return rt_err_t
  */
 rt_err_t mcn_copy_from_hub(McnHub_t hub, void* buffer)
 {
@@ -217,7 +217,7 @@ rt_err_t mcn_copy_from_hub(McnHub_t hub, void* buffer)
 
 /**
  * @brief Advertise a uMCN topic
- * 
+ *
  * @param hub uMCN hub
  * @param echo Echo function to print topic contents
  * @return rt_err_t RT_EOK indicates success
@@ -272,7 +272,7 @@ rt_err_t mcn_advertise(McnHub_t hub, int (*echo)(void* parameter))
 
 /**
  * @brief Subscribe a uMCN topic
- * 
+ *
  * @param hub uMCN hub
  * @param event Event handler to provide synchronize poll
  * @param pub_cb Topic published callback function
@@ -327,7 +327,7 @@ McnNode_t mcn_subscribe(McnHub_t hub, MCN_EVENT_HANDLE event, void (*pub_cb)(voi
 
 /**
  * @brief Unsubscribe a uMCN topic
- * 
+ *
  * @param hub uMCN hub
  * @param node Subscribe node
  * @return rt_err_t RT_EOK indicates success
@@ -385,7 +385,7 @@ rt_err_t mcn_unsubscribe(McnHub_t hub, McnNode_t node)
 
 /**
  * @brief Publish uMCN topic
- * 
+ *
  * @param hub uMCN hub, which can be obtained by MCN_HUB() macro
  * @param data Data of topic to publish
  * @return rt_err_t RT_EOK indicates success
@@ -446,8 +446,13 @@ rt_err_t mcn_publish(McnHub_t hub, const void* data)
 
 /**
  * @brief Initialize uMCN module
+<<<<<<< HEAD
  * 
  * @return int RT_EOK indicates success
+=======
+ *
+ * @return rt_err_t RT_EOK indicates success
+>>>>>>> 036c39c701fbe736097e536827e92588236af4e0
  */
 int mcn_init(void)
 {
