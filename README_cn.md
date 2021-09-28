@@ -1,8 +1,6 @@
 
 [English](README.md) |
 
--------------------
-
 # uMCN
 
 uMCN 是 [Firmament Autopilot](https://github.com/Firmament-Autopilot) 项目的一个子模块.
