@@ -4,9 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <optparse.h>
+#include <shell.h>
 
-#include "optparse.h"
-#include "shell.h"
 #include "uMCN.h"
 
 #define STRING_COMPARE(str1, str2)      (strcmp(str1, str2) == 0)
@@ -56,19 +56,6 @@ static void show_resume_usage(void)
 {
     COMMAND_USAGE("mcn resume", "<topic>");
 }
-
-#if defined(RT_USING_DEVICE) && !defined(RT_USING_POSIX)
-static int finsh_getchar(void)
-{
-    char ch = 0;
-
-    RT_ASSERT(shell != RT_NULL);
-    while (rt_device_read(shell->device, -1, &ch, 1) != 1)
-        rt_sem_take(&shell->rx_sem, RT_WAITING_FOREVER);
-
-    return (int)ch;
-}
-#endif
 
 rt_inline void object_split(int len)
 {
@@ -377,4 +364,4 @@ int cmd_mcn(int argc, char** argv)
 
     return res;
 }
-FINSH_FUNCTION_EXPORT_ALIAS(cmd_mcn, __cmd_mcn, uMCN topics operations);
+MSH_CMD_EXPORT_ALIAS(cmd_mcn, __cmd_mcn, uMCN topics operations);

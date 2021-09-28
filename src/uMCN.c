@@ -446,13 +446,8 @@ rt_err_t mcn_publish(McnHub_t hub, const void* data)
 
 /**
  * @brief Initialize uMCN module
-<<<<<<< HEAD
  * 
  * @return int RT_EOK indicates success
-=======
- *
- * @return rt_err_t RT_EOK indicates success
->>>>>>> 036c39c701fbe736097e536827e92588236af4e0
  */
 int mcn_init(void)
 {
