@@ -4,6 +4,6 @@ cwd     = GetCurrentDir()
 src     = Glob('*.c') + Glob('*.cpp')
 CPPPATH = [cwd]
 
-group = DefineGroup('uMCN', src, depend = ['UMCN_USING_EXAMPLE'], CPPPATH = CPPPATH)
+group = DefineGroup('uMCN', src, depend = ['UMCN_USING_DEMO'], CPPPATH = CPPPATH)
 
 Return('group')

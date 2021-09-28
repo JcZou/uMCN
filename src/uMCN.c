@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright 2020 The Firmament Authors. All Rights Reserved.
+ * Copyright 2021 The Firmament Authors. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *****************************************************************************/
-
 #include <rtthread.h>
 #include <string.h>
 
@@ -27,10 +26,13 @@ static struct rt_timer timer_mcn_freq_est;
  * 
  * @param parameter Unused
  */
-static void __mcn_freq_est_entry(void* parameter)
+static void mcn_freq_est_entry(void* parameter)
 {
     for (McnList_t cp = &__mcn_list; cp != NULL; cp = cp->next) {
         McnHub_t hub = cp->hub;
+        if (hub == NULL) {
+            break;
+        }
         /* calculate publish frequency */
         uint32_t cnt = 0;
         for (int i = 0; i < MCN_FREQ_EST_WINDOW_LEN; i++) {
@@ -445,19 +447,21 @@ rt_err_t mcn_publish(McnHub_t hub, const void* data)
 /**
  * @brief Initialize uMCN module
  * 
- * @return rt_err_t RT_EOK indicates success
+ * @return int RT_EOK indicates success
  */
-rt_err_t mcn_init(void)
+int mcn_init(void)
 {
     rt_timer_init(&timer_mcn_freq_est, "mcn_freq_est",
-        __mcn_freq_est_entry,
+        mcn_freq_est_entry,
         NULL,
-        1000,
+        RT_TICK_PER_SECOND,
         RT_TIMER_FLAG_PERIODIC | RT_TIMER_FLAG_SOFT_TIMER);
 
     if (rt_timer_start(&timer_mcn_freq_est) != RT_EOK) {
+        rt_kprintf("timer start error\n");
         return RT_ERROR;
     }
 
     return RT_EOK;
 }
+INIT_COMPONENT_EXPORT(mcn_init);

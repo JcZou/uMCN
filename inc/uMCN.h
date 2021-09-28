@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright 2020 The Firmament Authors. All Rights Reserved.
+ * Copyright 2021 The Firmament Authors. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,7 +99,7 @@ struct mcn_list {
         .freq = 0.0f             \
     }
 
-rt_err_t mcn_init(void);
+int mcn_init(void);
 rt_err_t mcn_advertise(McnHub_t hub, int (*echo)(void* parameter));
 McnNode_t mcn_subscribe(McnHub_t hub, MCN_EVENT_HANDLE event, void (*pub_cb)(void* parameter));
 rt_err_t mcn_unsubscribe(McnHub_t hub, McnNode_t node);
