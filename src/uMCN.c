@@ -168,16 +168,16 @@ rt_err_t mcn_copy(McnHub_t hub, McnNode_t node_t, void* buffer)
 
     if (hub->pdata == NULL) {
         /* copy from non-advertised hub */
-        return RT_ERROR;
+        return -RT_ERROR;
     }
 
     if (!hub->published) {
         /* copy before published */
-        return RT_ERROR;
+        return -RT_ERROR;
     }
 
     MCN_ENTER_CRITICAL;
-    memcpy(buffer, hub->pdata, hub->obj_size);
+    rt_memcpy(buffer, hub->pdata, hub->obj_size);
     node_t->renewal = 0;
     MCN_EXIT_CRITICAL;
 
@@ -200,16 +200,16 @@ rt_err_t mcn_copy_from_hub(McnHub_t hub, void* buffer)
 
     if (hub->pdata == NULL) {
         /* copy from non-advertised hub */
-        return RT_ERROR;
+        return -RT_ERROR;
     }
 
     if (!hub->published) {
         /* copy before published */
-        return RT_ERROR;
+        return -RT_ERROR;
     }
 
     MCN_ENTER_CRITICAL;
-    memcpy(buffer, hub->pdata, hub->obj_size);
+    rt_memcpy(buffer, hub->pdata, hub->obj_size);
     MCN_EXIT_CRITICAL;
 
     return RT_EOK;
@@ -228,7 +228,7 @@ rt_err_t mcn_advertise(McnHub_t hub, int (*echo)(void* parameter))
 
     if (hub->pdata != NULL) {
         /* already advertised */
-        return RT_ERROR;
+        return -RT_ERROR;
     }
 
     MCN_ENTER_CRITICAL;
@@ -236,7 +236,7 @@ rt_err_t mcn_advertise(McnHub_t hub, int (*echo)(void* parameter))
     hub->echo = echo;
 
     if (hub->pdata == NULL) {
-        return RT_ENOMEM;
+        return -RT_ENOMEM;
     }
 
     memset(hub->pdata, 0, hub->obj_size);
@@ -253,7 +253,7 @@ rt_err_t mcn_advertise(McnHub_t hub, int (*echo)(void* parameter))
         cp->next = (McnList_t)MCN_MALLOC(sizeof(McnList));
 
         if (cp->next == NULL)
-            return RT_ENOMEM;
+            return -RT_ENOMEM;
 
         cp = cp->next;
     }
@@ -353,7 +353,7 @@ rt_err_t mcn_unsubscribe(McnHub_t hub, McnNode_t node)
 
     if (cur_node == NULL) {
         /* can not find */
-        return RT_EEMPTY;
+        return -RT_EEMPTY;
     }
 
     /* update list */
@@ -397,11 +397,11 @@ rt_err_t mcn_publish(McnHub_t hub, const void* data)
 
     if (hub->pdata == NULL) {
         /* hub is not advertised yet */
-        return RT_ERROR;
+        return -RT_ERROR;
     }
 
     if (hub->suspend) {
-        return RT_ERROR;
+        return -RT_ERROR;
     }
 
     /* update freq estimator window */
@@ -409,7 +409,7 @@ rt_err_t mcn_publish(McnHub_t hub, const void* data)
 
     MCN_ENTER_CRITICAL;
     /* copy data to hub */
-    memcpy(hub->pdata, data, hub->obj_size);
+    rt_memcpy(hub->pdata, data, hub->obj_size);
     /* traverse each node */
     McnNode_t node = hub->link_head;
 
@@ -459,7 +459,7 @@ int mcn_init(void)
 
     if (rt_timer_start(&timer_mcn_freq_est) != RT_EOK) {
         rt_kprintf("timer start error\n");
-        return RT_ERROR;
+        return -RT_ERROR;
     }
 
     return RT_EOK;
