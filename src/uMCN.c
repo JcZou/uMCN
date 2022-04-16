@@ -13,12 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *****************************************************************************/
-#include <rtthread.h>
-#include <string.h>
 
+#include <string.h>
+#include <rtthread.h>
 #include <uMCN.h>
 
-static McnList __mcn_list = { .hub = NULL, .next = NULL };
+#define DBG_TAG    "uMCN"
+#define DBG_LVL    DBG_INFO
+#include <rtdbg.h>
+
+static McnList __mcn_list = { .hub = RT_NULL, .next = RT_NULL };
 static struct rt_timer timer_mcn_freq_est;
 
 /**
@@ -28,13 +32,13 @@ static struct rt_timer timer_mcn_freq_est;
  */
 static void mcn_freq_est_entry(void* parameter)
 {
-    for (McnList_t cp = &__mcn_list; cp != NULL; cp = cp->next) {
+    for (McnList_t cp = &__mcn_list; cp != RT_NULL; cp = cp->next) {
         McnHub_t hub = cp->hub;
-        if (hub == NULL) {
+        if (hub == RT_NULL) {
             break;
         }
         /* calculate publish frequency */
-        uint32_t cnt = 0;
+        rt_uint32_t cnt = 0;
         for (int i = 0; i < MCN_FREQ_EST_WINDOW_LEN; i++) {
             cnt += hub->freq_est_window[i];
             hub->freq = (float)cnt / MCN_FREQ_EST_WINDOW_LEN;
@@ -52,9 +56,9 @@ static void mcn_freq_est_entry(void* parameter)
  */
 void mcn_node_clear(McnNode_t node_t)
 {
-    MCN_ASSERT(node_t != NULL);
+    MCN_ASSERT(node_t != RT_NULL);
 
-    if (node_t == NULL) {
+    if (node_t == RT_NULL) {
         return;
     }
 
@@ -104,8 +108,8 @@ McnHub_t mcn_iterate(McnList_t* ite)
     McnHub_t hub;
     McnList_t node = *ite;
 
-    if (node == NULL) {
-        return NULL;
+    if (node == RT_NULL) {
+        return RT_NULL;
     }
     hub = node->hub;
     *ite = node->next;
@@ -118,14 +122,14 @@ McnHub_t mcn_iterate(McnList_t* ite)
  * @note This function would return immediately
  *
  * @param node_t uMCN node
- * @return true Topic updated
- * @return false Topic not updated
+ * @return RT_TRUE Topic updated
+ * @return RT_FALSE Topic not updated
  */
-bool mcn_poll(McnNode_t node_t)
+rt_bool_t mcn_poll(McnNode_t node_t)
 {
-    bool renewal;
+    rt_bool_t renewal;
 
-    MCN_ASSERT(node_t != NULL);
+    MCN_ASSERT(node_t != RT_NULL);
 
     MCN_ENTER_CRITICAL;
     renewal = node_t->renewal;
@@ -140,15 +144,15 @@ bool mcn_poll(McnNode_t node_t)
  *
  * @param node_t uMCN node
  * @param timeout Wait timeout
- * @return true true Topic updated
- * @return false false Topic not updated
+ * @return RT_TRUE RT_TRUE Topic updated
+ * @return RT_FALSE RT_FALSE Topic not updated
  */
-bool mcn_poll_sync(McnNode_t node_t, int32_t timeout)
+rt_bool_t mcn_poll_sync(McnNode_t node_t, rt_int32_t timeout)
 {
-    MCN_ASSERT(node_t != NULL);
-    MCN_ASSERT(node_t->event != NULL);
+    MCN_ASSERT(node_t != RT_NULL);
+    MCN_ASSERT(node_t->event != RT_NULL);
 
-    return MCN_WAIT_EVENT(node_t->event, timeout) == 0 ? true : false;
+    return MCN_WAIT_EVENT(node_t->event, timeout) == 0 ? RT_TRUE : RT_FALSE;
 }
 
 /**
@@ -162,11 +166,11 @@ bool mcn_poll_sync(McnNode_t node_t, int32_t timeout)
  */
 rt_err_t mcn_copy(McnHub_t hub, McnNode_t node_t, void* buffer)
 {
-    MCN_ASSERT(hub != NULL);
-    MCN_ASSERT(node_t != NULL);
-    MCN_ASSERT(buffer != NULL);
+    MCN_ASSERT(hub != RT_NULL);
+    MCN_ASSERT(node_t != RT_NULL);
+    MCN_ASSERT(buffer != RT_NULL);
 
-    if (hub->pdata == NULL) {
+    if (hub->pdata == RT_NULL) {
         /* copy from non-advertised hub */
         return -RT_ERROR;
     }
@@ -195,10 +199,10 @@ rt_err_t mcn_copy(McnHub_t hub, McnNode_t node_t, void* buffer)
  */
 rt_err_t mcn_copy_from_hub(McnHub_t hub, void* buffer)
 {
-    MCN_ASSERT(hub != NULL);
-    MCN_ASSERT(buffer != NULL);
+    MCN_ASSERT(hub != RT_NULL);
+    MCN_ASSERT(buffer != RT_NULL);
 
-    if (hub->pdata == NULL) {
+    if (hub->pdata == RT_NULL) {
         /* copy from non-advertised hub */
         return -RT_ERROR;
     }
@@ -224,9 +228,9 @@ rt_err_t mcn_copy_from_hub(McnHub_t hub, void* buffer)
  */
 rt_err_t mcn_advertise(McnHub_t hub, int (*echo)(void* parameter))
 {
-    MCN_ASSERT(hub != NULL);
+    MCN_ASSERT(hub != RT_NULL);
 
-    if (hub->pdata != NULL) {
+    if (hub->pdata != RT_NULL) {
         /* already advertised */
         return -RT_ERROR;
     }
@@ -235,7 +239,7 @@ rt_err_t mcn_advertise(McnHub_t hub, int (*echo)(void* parameter))
     hub->pdata = MCN_MALLOC(hub->obj_size);
     hub->echo = echo;
 
-    if (hub->pdata == NULL) {
+    if (hub->pdata == RT_NULL) {
         return -RT_ENOMEM;
     }
 
@@ -244,22 +248,22 @@ rt_err_t mcn_advertise(McnHub_t hub, int (*echo)(void* parameter))
     /* update Mcn List */
     McnList_t cp = &__mcn_list;
 
-    while (cp->next != NULL) {
+    while (cp->next != RT_NULL) {
         /* find last node */
         cp = cp->next;
     }
 
-    if (cp->hub != NULL) {
+    if (cp->hub != RT_NULL) {
         cp->next = (McnList_t)MCN_MALLOC(sizeof(McnList));
 
-        if (cp->next == NULL)
+        if (cp->next == RT_NULL)
             return -RT_ENOMEM;
 
         cp = cp->next;
     }
 
     cp->hub = hub;
-    cp->next = NULL;
+    cp->next = RT_NULL;
 
     /* init publish freq estimator window */
     memset(hub->freq_est_window, 0, 2 * MCN_FREQ_EST_WINDOW_LEN);
@@ -276,33 +280,33 @@ rt_err_t mcn_advertise(McnHub_t hub, int (*echo)(void* parameter))
  * @param hub uMCN hub
  * @param event Event handler to provide synchronize poll
  * @param pub_cb Topic published callback function
- * @return McnNode_t Subscribe node, return NULL if fail
+ * @return McnNode_t Subscribe node, return RT_NULL if fail
  */
 McnNode_t mcn_subscribe(McnHub_t hub, MCN_EVENT_HANDLE event, void (*pub_cb)(void* parameter))
 {
-    MCN_ASSERT(hub != NULL);
+    MCN_ASSERT(hub != RT_NULL);
 
     if (hub->link_num >= MCN_MAX_LINK_NUM) {
-        rt_kprintf("mcn link num is already full!\n");
-        return NULL;
+        LOG_E("mcn link num is already full!");
+        return RT_NULL;
     }
 
     McnNode_t node = (McnNode_t)MCN_MALLOC(sizeof(McnNode));
 
-    if (node == NULL) {
-        rt_kprintf("mcn create node fail!\n");
-        return NULL;
+    if (node == RT_NULL) {
+        LOG_E("mcn create node fail!");
+        return RT_NULL;
     }
 
     node->renewal = 0;
     node->event = event;
     node->pub_cb = pub_cb;
-    node->next = NULL;
+    node->next = RT_NULL;
 
     MCN_ENTER_CRITICAL;
 
     /* no node link yet */
-    if (hub->link_tail == NULL) {
+    if (hub->link_tail == RT_NULL) {
         hub->link_head = hub->link_tail = node;
     } else {
         hub->link_tail->next = node;
@@ -334,14 +338,14 @@ McnNode_t mcn_subscribe(McnHub_t hub, MCN_EVENT_HANDLE event, void (*pub_cb)(voi
  */
 rt_err_t mcn_unsubscribe(McnHub_t hub, McnNode_t node)
 {
-    MCN_ASSERT(hub != NULL);
-    MCN_ASSERT(node != NULL);
+    MCN_ASSERT(hub != RT_NULL);
+    MCN_ASSERT(node != RT_NULL);
 
     /* traverse each node */
     McnNode_t cur_node = hub->link_head;
-    McnNode_t pre_node = NULL;
+    McnNode_t pre_node = RT_NULL;
 
-    while (cur_node != NULL) {
+    while (cur_node != RT_NULL) {
         if (cur_node == node) {
             /* find node */
             break;
@@ -351,7 +355,7 @@ rt_err_t mcn_unsubscribe(McnHub_t hub, McnNode_t node)
         cur_node = cur_node->next;
     }
 
-    if (cur_node == NULL) {
+    if (cur_node == RT_NULL) {
         /* can not find */
         return -RT_EEMPTY;
     }
@@ -360,13 +364,13 @@ rt_err_t mcn_unsubscribe(McnHub_t hub, McnNode_t node)
     MCN_ENTER_CRITICAL;
 
     if (hub->link_num == 1) {
-        hub->link_head = hub->link_tail = NULL;
+        hub->link_head = hub->link_tail = RT_NULL;
     } else {
         if (cur_node == hub->link_head) {
             hub->link_head = cur_node->next;
         } else if (cur_node == hub->link_tail) {
             if (pre_node) {
-                pre_node->next = NULL;
+                pre_node->next = RT_NULL;
             }
             hub->link_tail = pre_node;
         } else {
@@ -376,7 +380,7 @@ rt_err_t mcn_unsubscribe(McnHub_t hub, McnNode_t node)
 
     /* free current node */
     MCN_FREE(cur_node);
-    // cur_node = NULL;
+    // cur_node = RT_NULL;
     hub->link_num--;
     MCN_EXIT_CRITICAL;
 
@@ -392,10 +396,10 @@ rt_err_t mcn_unsubscribe(McnHub_t hub, McnNode_t node)
  */
 rt_err_t mcn_publish(McnHub_t hub, const void* data)
 {
-    MCN_ASSERT(hub != NULL);
-    MCN_ASSERT(data != NULL);
+    MCN_ASSERT(hub != RT_NULL);
+    MCN_ASSERT(data != RT_NULL);
 
-    if (hub->pdata == NULL) {
+    if (hub->pdata == RT_NULL) {
         /* hub is not advertised yet */
         return -RT_ERROR;
     }
@@ -413,7 +417,7 @@ rt_err_t mcn_publish(McnHub_t hub, const void* data)
     /* traverse each node */
     McnNode_t node = hub->link_head;
 
-    while (node != NULL) {
+    while (node != RT_NULL) {
         /* update each node's renewal flag */
         node->renewal = 1;
 
@@ -433,8 +437,8 @@ rt_err_t mcn_publish(McnHub_t hub, const void* data)
     /* invoke callback func */
     node = hub->link_head;
 
-    while (node != NULL) {
-        if (node->pub_cb != NULL) {
+    while (node != RT_NULL) {
+        if (node->pub_cb != RT_NULL) {
             node->pub_cb(hub->pdata);
         }
 
@@ -453,15 +457,15 @@ int mcn_init(void)
 {
     rt_timer_init(&timer_mcn_freq_est, "mcn_freq_est",
         mcn_freq_est_entry,
-        NULL,
+        RT_NULL,
         RT_TICK_PER_SECOND,
         RT_TIMER_FLAG_PERIODIC | RT_TIMER_FLAG_SOFT_TIMER);
 
     if (rt_timer_start(&timer_mcn_freq_est) != RT_EOK) {
-        rt_kprintf("timer start error\n");
+        LOG_E("timer start error!");
         return -RT_ERROR;
     }
 
     return RT_EOK;
 }
-INIT_COMPONENT_EXPORT(mcn_init);
+INIT_DEVICE_EXPORT(mcn_init);

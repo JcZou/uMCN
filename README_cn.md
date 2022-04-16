@@ -17,8 +17,8 @@ fmt_err_t mcn_advertise(McnHub_t hub, int (*echo)(void* parameter));
 McnNode_t mcn_subscribe(McnHub_t hub, MCN_EVENT_HANDLE event, void (*pub_cb)(void* parameter));
 fmt_err_t mcn_unsubscribe(McnHub_t hub, McnNode_t node);
 fmt_err_t mcn_publish(McnHub_t hub, const void* data);
-bool mcn_poll(McnNode_t node_t);
-bool mcn_poll_sync(McnNode_t node_t, int32_t timeout);
+rt_bool_t mcn_poll(McnNode_t node_t);
+rt_bool_t mcn_poll_sync(McnNode_t node_t, rt_int32_t timeout);
 fmt_err_t mcn_copy(McnHub_t hub, McnNode_t node_t, void* buffer);
 fmt_err_t mcn_copy_from_hub(McnHub_t hub, void* buffer);
 void mcn_suspend(McnHub_t hub);
@@ -34,7 +34,7 @@ void mcn_node_clear(McnNode_t node_t);
 
 ```c
 typedef struct {
-	uint32_t a;
+	rt_uint32_t a;
 	float b;
 	int8_t c[4];
 } data_content;
@@ -87,13 +87,13 @@ uMCN 支持使用同步或异步方法订阅主题。对于同步方法，订阅
 
 ```c
 rt_sem_t event = rt_sem_create("my_event", 0, RT_IPC_FLAG_FIFO);
-McnNode_t my_nod = mcn_subscribe(MCN_ID(my_topic), event, NULL);
+McnNode_t my_nod = mcn_subscribe(MCN_ID(my_topic), event, RT_NULL);
 ```
 
 **异步订阅**
 
 ```c
-McnNode_t my_nod = mcn_subscribe(MCN_ID(my_topic), NULL, NULL);
+McnNode_t my_nod = mcn_subscribe(MCN_ID(my_topic), RT_NULL, RT_NULL);
 ```
 
 > 注意，如果你在定义主题之外的文件来访问该主题，你需要使用宏 `MCN_DECLARE(name)` 来进行申明。

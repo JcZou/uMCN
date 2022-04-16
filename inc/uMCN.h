@@ -35,22 +35,10 @@ extern "C" {
 #define MCN_MAX_LINK_NUM        30
 #define MCN_FREQ_EST_WINDOW_LEN 5
 
-#ifndef bool
-typedef int bool;
-#endif
-
-#ifndef true
-#define true (1U)
-#endif
-
-#ifndef false
-#define false (0U)
-#endif
-
 typedef struct mcn_node McnNode;
 typedef struct mcn_node* McnNode_t;
 struct mcn_node {
-    volatile uint8_t renewal;
+    volatile rt_uint8_t renewal;
     MCN_EVENT_HANDLE event;
     void (*pub_cb)(void* parameter);
     McnNode_t next;
@@ -60,18 +48,18 @@ typedef struct mcn_hub McnHub;
 typedef struct mcn_hub* McnHub_t;
 struct mcn_hub {
     const char* obj_name;
-    const uint32_t obj_size;
+    const rt_uint32_t obj_size;
     void* pdata;
     McnNode_t link_head;
     McnNode_t link_tail;
-    uint32_t link_num;
-    uint8_t published;
-    uint8_t suspend;
+    rt_uint32_t link_num;
+    rt_uint8_t published;
+    rt_uint8_t suspend;
     int (*echo)(void* parameter);
     /* publish freq estimate */
     float freq;
-    uint16_t freq_est_window[MCN_FREQ_EST_WINDOW_LEN];
-    uint16_t window_index;
+    rt_uint16_t freq_est_window[MCN_FREQ_EST_WINDOW_LEN];
+    rt_uint16_t window_index;
 };
 
 typedef struct mcn_list McnList;
@@ -90,9 +78,9 @@ struct mcn_list {
     McnHub __mcn_##_name = {     \
         .obj_name = #_name,      \
         .obj_size = _size,       \
-        .pdata = NULL,           \
-        .link_head = NULL,       \
-        .link_tail = NULL,       \
+        .pdata = RT_NULL,           \
+        .link_head = RT_NULL,       \
+        .link_tail = RT_NULL,       \
         .link_num = 0,           \
         .published = 0,          \
         .suspend = 0,            \
@@ -104,8 +92,8 @@ rt_err_t mcn_advertise(McnHub_t hub, int (*echo)(void* parameter));
 McnNode_t mcn_subscribe(McnHub_t hub, MCN_EVENT_HANDLE event, void (*pub_cb)(void* parameter));
 rt_err_t mcn_unsubscribe(McnHub_t hub, McnNode_t node);
 rt_err_t mcn_publish(McnHub_t hub, const void* data);
-bool mcn_poll(McnNode_t node_t);
-bool mcn_poll_sync(McnNode_t node_t, int32_t timeout);
+rt_bool_t mcn_poll(McnNode_t node_t);
+rt_bool_t mcn_poll_sync(McnNode_t node_t, rt_int32_t timeout);
 rt_err_t mcn_copy(McnHub_t hub, McnNode_t node_t, void* buffer);
 rt_err_t mcn_copy_from_hub(McnHub_t hub, void* buffer);
 void mcn_suspend(McnHub_t hub);

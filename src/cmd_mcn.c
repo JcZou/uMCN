@@ -69,7 +69,7 @@ void list_print_char(const char c, int cnt)
         rt_device_write(console_dev, 0, &c, 1);
 }
 
-void list_printf(const char pad, uint32_t len, uint8_t align, const char* fmt, ...)
+void list_printf(const char pad, rt_uint32_t len, rt_uint8_t align, const char* fmt, ...)
 {
     va_list args;
     char buffer[100];
@@ -88,7 +88,7 @@ void list_printf(const char pad, uint32_t len, uint8_t align, const char* fmt, .
         rt_device_write(console_dev, 0, buffer, length);
         list_print_char(pad, len - length);
     } else if (align == SYSCMD_ALIGN_MIDDLE) {
-        uint32_t hl = (len - length + 1) / 2;
+        rt_uint32_t hl = (len - length + 1) / 2;
         list_print_char(pad, hl);
         rt_device_write(console_dev, 0, buffer, length);
         list_print_char(pad, (len - length) - hl);
@@ -105,7 +105,7 @@ static int name_maxlen(const char* title)
     McnList_t ite = mcn_get_list();
     while (1) {
         McnHub_t hub = mcn_iterate(&ite);
-        if (hub == NULL) {
+        if (hub == RT_NULL) {
             break;
         }
         int len = strlen(hub->obj_name);
@@ -120,14 +120,14 @@ static int name_maxlen(const char* title)
 
 static void list_topic(void)
 {
-    uint32_t max_len = name_maxlen("Topic") + 2;
+    rt_uint32_t max_len = name_maxlen("Topic") + 2;
 
     rt_kprintf("%-*.s    #SUB   Freq(Hz)   Echo   Suspend\n", max_len - 2, "Topic");
     object_split(max_len);
     rt_kprintf(" ------ ---------- ------ ---------\n");
 
     McnList_t ite = mcn_get_list();
-    for (McnHub_t hub = mcn_iterate(&ite); hub != NULL; hub = mcn_iterate(&ite)) {
+    for (McnHub_t hub = mcn_iterate(&ite); hub != RT_NULL; hub = mcn_iterate(&ite)) {
         list_printf(' ', max_len, SYSCMD_ALIGN_LEFT, hub->obj_name); rt_kprintf(" ");
         list_printf(' ', strlen("#SUB") + 2, SYSCMD_ALIGN_MIDDLE, "%d", (int)hub->link_num); rt_kprintf(" ");
         list_printf(' ', strlen("Freq(Hz)") + 2, SYSCMD_ALIGN_MIDDLE, "%.1f", hub->freq); rt_kprintf(" ");
@@ -142,10 +142,10 @@ static int suspend_topic(struct optparse options)
     int option;
     struct optparse_long longopts[] = {
         { "help", 'h', OPTPARSE_NONE },
-        { NULL } /* Don't remove this line */
+        { RT_NULL } /* Don't remove this line */
     };
 
-    while ((option = optparse_long(&options, longopts, NULL)) != -1) {
+    while ((option = optparse_long(&options, longopts, RT_NULL)) != -1) {
         switch (option) {
         case 'h':
             show_suspend_usage();
@@ -156,17 +156,17 @@ static int suspend_topic(struct optparse options)
         }
     }
 
-    if ((arg = optparse_arg(&options)) == NULL) {
+    if ((arg = optparse_arg(&options)) == RT_NULL) {
         show_suspend_usage();
         return EXIT_FAILURE;
     }
 
     McnList_t ite = mcn_get_list();
-    McnHub_t target_hub = NULL;
+    McnHub_t target_hub = RT_NULL;
 
     while (1) {
         McnHub_t hub = mcn_iterate(&ite);
-        if (hub == NULL) {
+        if (hub == RT_NULL) {
             break;
         }
         if (strcmp(hub->obj_name, arg) == 0) {
@@ -175,7 +175,7 @@ static int suspend_topic(struct optparse options)
         }
     }
 
-    if (target_hub == NULL) {
+    if (target_hub == RT_NULL) {
         rt_kprintf("can not find topic %s\n", arg);
         return EXIT_FAILURE;
     }
@@ -191,10 +191,10 @@ static int resume_topic(struct optparse options)
     int option;
     struct optparse_long longopts[] = {
         { "help", 'h', OPTPARSE_NONE },
-        { NULL } /* Don't remove this line */
+        { RT_NULL } /* Don't remove this line */
     };
 
-    while ((option = optparse_long(&options, longopts, NULL)) != -1) {
+    while ((option = optparse_long(&options, longopts, RT_NULL)) != -1) {
         switch (option) {
         case 'h':
             show_resume_usage();
@@ -205,17 +205,17 @@ static int resume_topic(struct optparse options)
         }
     }
 
-    if ((arg = optparse_arg(&options)) == NULL) {
+    if ((arg = optparse_arg(&options)) == RT_NULL) {
         show_resume_usage();
         return EXIT_FAILURE;
     }
 
     McnList_t ite = mcn_get_list();
-    McnHub_t target_hub = NULL;
+    McnHub_t target_hub = RT_NULL;
 
     while (1) {
         McnHub_t hub = mcn_iterate(&ite);
-        if (hub == NULL) {
+        if (hub == RT_NULL) {
             break;
         }
         if (strcmp(hub->obj_name, arg) == 0) {
@@ -224,7 +224,7 @@ static int resume_topic(struct optparse options)
         }
     }
 
-    if (target_hub == NULL) {
+    if (target_hub == RT_NULL) {
         rt_kprintf("can not find topic %s\n", arg);
         return EXIT_FAILURE;
     }
@@ -242,17 +242,17 @@ static int echo_topic(struct optparse options)
         { "help", 'h', OPTPARSE_NONE },
         { "number", 'n', OPTPARSE_REQUIRED },
         { "period", 'p', OPTPARSE_REQUIRED },
-        { NULL } /* Don't remove this line */
+        { RT_NULL } /* Don't remove this line */
     };
 
 #if defined(RT_USING_DEVICE) && !defined(RT_USING_POSIX)
-    uint32_t cnt = 0xFFFFFFFF;
+    rt_uint32_t cnt = 0xFFFFFFFF;
 #else
-    uint32_t cnt = 1;
+    rt_uint32_t cnt = 1;
 #endif
-    uint32_t period = 500;
+    rt_uint32_t period = 500;
 
-    while ((option = optparse_long(&options, longopts, NULL)) != -1) {
+    while ((option = optparse_long(&options, longopts, RT_NULL)) != -1) {
         switch (option) {
         case 'h':
             show_echo_usage();
@@ -269,16 +269,16 @@ static int echo_topic(struct optparse options)
         }
     }
 
-    if ((arg = optparse_arg(&options)) == NULL) {
+    if ((arg = optparse_arg(&options)) == RT_NULL) {
         show_echo_usage();
         return EXIT_FAILURE;
     }
 
     McnList_t ite = mcn_get_list();
-    McnHub_t target_hub = NULL;
+    McnHub_t target_hub = RT_NULL;
     while (1) {
         McnHub_t hub = mcn_iterate(&ite);
-        if (hub == NULL) {
+        if (hub == RT_NULL) {
             break;
         }
         if (strcmp(hub->obj_name, arg) == 0) {
@@ -287,19 +287,19 @@ static int echo_topic(struct optparse options)
         }
     }
 
-    if (target_hub == NULL) {
+    if (target_hub == RT_NULL) {
         rt_kprintf("can not find topic %s\n", arg);
         return EXIT_FAILURE;
     }
 
-    if (target_hub->echo == NULL) {
+    if (target_hub->echo == RT_NULL) {
         rt_kprintf("there is no topic echo function defined!\n");
         return EXIT_FAILURE;
     }
 
-    McnNode_t node = mcn_subscribe(target_hub, NULL, NULL);
+    McnNode_t node = mcn_subscribe(target_hub, RT_NULL, RT_NULL);
 
-    if (node == NULL) {
+    if (node == RT_NULL) {
         rt_kprintf("mcn subscribe fail\n");
         return EXIT_FAILURE;
     }
