@@ -305,7 +305,7 @@ static int echo_topic(struct optparse options)
     }
 
     while (cnt) {
-#if defined(RT_USING_DEVICE) && !defined(RT_USING_POSIX)
+#if !defined(RT_USING_POSIX_STDIO) && defined(RT_USING_DEVICE)
         /* type any key to exit */
         if (rt_sem_trytake(&shell->rx_sem) == RT_EOK) {
             int ch;
@@ -364,4 +364,4 @@ int cmd_mcn(int argc, char** argv)
 
     return res;
 }
-MSH_CMD_EXPORT_ALIAS(cmd_mcn, __cmd_mcn, uMCN topics operations);
+MSH_CMD_EXPORT_ALIAS(cmd_mcn, mcn, uMCN topics operations);

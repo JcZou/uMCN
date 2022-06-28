@@ -228,6 +228,9 @@ rt_err_t mcn_copy_from_hub(McnHub_t hub, void* buffer)
  */
 rt_err_t mcn_advertise(McnHub_t hub, int (*echo)(void* parameter))
 {
+    void* pdata;
+    void* next;
+
     MCN_ASSERT(hub != RT_NULL);
 
     if (hub->pdata != RT_NULL) {
@@ -235,15 +238,21 @@ rt_err_t mcn_advertise(McnHub_t hub, int (*echo)(void* parameter))
         return -RT_ERROR;
     }
 
-    MCN_ENTER_CRITICAL;
-    hub->pdata = MCN_MALLOC(hub->obj_size);
-    hub->echo = echo;
+    pdata = MCN_MALLOC(hub->obj_size);
+    if (pdata == RT_NULL) {
+        return -RT_ENOMEM;
+    }
+    memset(pdata, 0, hub->obj_size);
 
-    if (hub->pdata == RT_NULL) {
+    next = MCN_MALLOC(sizeof(McnList));
+    if (next == RT_NULL) {
+        MCN_FREE(pdata);
         return -RT_ENOMEM;
     }
 
-    memset(hub->pdata, 0, hub->obj_size);
+    MCN_ENTER_CRITICAL;
+    hub->pdata = pdata;
+    hub->echo = echo;
 
     /* update Mcn List */
     McnList_t cp = &__mcn_list;
@@ -254,11 +263,7 @@ rt_err_t mcn_advertise(McnHub_t hub, int (*echo)(void* parameter))
     }
 
     if (cp->hub != RT_NULL) {
-        cp->next = (McnList_t)MCN_MALLOC(sizeof(McnList));
-
-        if (cp->next == RT_NULL)
-            return -RT_ENOMEM;
-
+        cp->next = (McnList_t)next;
         cp = cp->next;
     }
 
@@ -378,11 +383,12 @@ rt_err_t mcn_unsubscribe(McnHub_t hub, McnNode_t node)
         }
     }
 
+    hub->link_num--;
+
+    MCN_EXIT_CRITICAL;
+
     /* free current node */
     MCN_FREE(cur_node);
-    // cur_node = RT_NULL;
-    hub->link_num--;
-    MCN_EXIT_CRITICAL;
 
     return RT_EOK;
 }
